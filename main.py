@@ -7,6 +7,7 @@ from optimizers import (
     NewtonMethod
 )
 from plot_utils import plot_method
+from functions import f
 
 # Настройки
 os.makedirs("plots", exist_ok=True)
@@ -36,5 +37,5 @@ for name, (res, iters) in results.items():
 
 # Аналитическая проверка
 from scipy.optimize import minimize_scalar
-res = minimize_scalar(f, bounds=(a, b), method='bounded').x
+res = minimize_scalar(f, bounds=(a, b), method='bounded')
 print(f"\nAnalytical solution: {res:.5f}")
