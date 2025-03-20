@@ -1,100 +1,109 @@
 import math
-from abc import ABC, abstractmethod
 from functions import f, df, d2f
 
-class BaseOptimizer(ABC):
-    def __init__(self, a, b, epsilon):
+class BisectionMethod:
+    def __init__(self, a, b, eps):
         self.a = a
         self.b = b
-        self.epsilon = epsilon
-        self.history = []
-    
-    @abstractmethod
-    def solve(self):
-        pass
-
-class DichotomyMethod(BaseOptimizer):
-    def solve(self):
-        a, b = self.a, self.b
-        delta = self.epsilon / 3
+        self.eps = eps
+        self.history = []  # Для визуализации: храним границы интервалов
         
-        while (b - a) > self.epsilon:
-            c = (a + b) / 2
-            x1 = max(a, c - delta)
-            x2 = min(b, c + delta)
+    def solve(self):
+        """Метод половинного деления"""
+        a, b = self.a, self.b
+        iterations = 0
+        delta = self.eps / 3
+        
+        while (b - a) > self.eps:
+            c = (a + b)/2
+            x1 = c - delta
+            x2 = c + delta
             
-            self.history.extend([(x1, f(x1)), (x2, f(x2))])
+            # Сохраняем данные для графика
+            self.history.append({
+                'left': a,
+                'right': b,
+                'points': [x1, x2]
+            })
             
             if f(x1) < f(x2):
                 b = x2
             else:
                 a = x1
-        
-        return (a + b) / 2
+            iterations += 1
+            
+        self.result = (a + b)/2
+        return self.result, iterations
 
-class GoldenSectionMethod(BaseOptimizer):
+class GoldenSectionMethod:
+    def __init__(self, a, b, eps):
+        self.a = a
+        self.b = b
+        self.eps = eps
+        self.history = []  # Храним все промежуточные интервалы
+        
     def solve(self):
+        """Метод золотого сечения"""
         a, b = self.a, self.b
-        ratio = (math.sqrt(5) - 1) / 2
+        ratio = (math.sqrt(5)-1)/2
+        iterations = 0
         
-        x1 = b - ratio * (b - a)
-        x2 = a + ratio * (b - a)
-        self.history.extend([(x1, f(x1)), (x2, f(x2))])
+        x1 = b - ratio*(b-a)
+        x2 = a + ratio*(b-a)
+        f1, f2 = f(x1), f(x2)
         
-        while (b - a) > self.epsilon:
-            if f(x1) < f(x2):
+        while (b - a) > self.eps:
+            self.history.append({
+                'left': a,
+                'right': b,
+                'points': [x1, x2]
+            })
+            
+            if f1 < f2:
                 b = x2
-                x2, x1 = x1, b - ratio * (b - a)
+                x2, f2 = x1, f1
+                x1 = b - ratio*(b-a)
+                f1 = f(x1)
             else:
                 a = x1
-                x1, x2 = x2, a + ratio * (b - a)
+                x1, f1 = x2, f2
+                x2 = a + ratio*(b-a)
+                f2 = f(x2)
+                
+            iterations += 1
             
-            self.history.extend([(x1, f(x1)), (x2, f(x2))])
-        
-        return (a + b) / 2
+        self.result = (a + b)/2
+        return self.result, iterations
 
-class ChordMethod(BaseOptimizer):
+class NewtonMethod:
+    def __init__(self, a, b, eps, x0=None):
+        self.a = a
+        self.b = b
+        self.eps = eps
+        self.x0 = x0 or (a + b)/2  # Начальное приближение
+        self.history = []  # Точки итераций
+        
     def solve(self):
-        x_prev, x_curr = self.a, self.b
+        """Метод Ньютона"""
+        x = self.x0
+        iterations = 0
         
-        for _ in range(1000):
-            df_prev = df(x_prev)
-            df_curr = df(x_curr)
+        while True:
+            self.history.append(x)
+            grad = df(x)
+            hess = d2f(x)
             
-            if abs(df_curr) < self.epsilon:
+            if abs(grad) < self.eps:
                 break
                 
-            x_next = x_curr - df_curr * (x_curr - x_prev) / (df_curr - df_prev)
-            x_next = max(self.a, min(x_next, self.b))
-            self.history.append((x_next, f(x_next)))
+            x_new = x - grad/hess
+            x_new = max(self.a, min(x_new, self.b))  # Ограничение интервалом
             
-            if abs(x_next - x_curr) < self.epsilon:
+            if abs(x_new - x) < self.eps:
                 break
                 
-            x_prev, x_curr = x_curr, x_next
-        
-        return x_curr
-
-class NewtonMethod(BaseOptimizer):
-    def __init__(self, a, b, epsilon, initial_guess=None):
-        super().__init__(a, b, epsilon)
-        self.initial_guess = initial_guess or (a + b)/2  # Значение по умолчанию
-    
-    def solve(self):  # Теперь без параметров
-        x = self.initial_guess
-        for _ in range(1000):
-            self.history.append((x, f(x)))
-            df_val = df(x)
+            x = x_new
+            iterations += 1
             
-            if abs(df_val) < self.epsilon:
-                break
-                
-            x_next = x - df_val / d2f(x)
-            x_next = max(self.a, min(x_next, self.b))
-            
-            if abs(x_next - x) < self.epsilon:
-                break
-                
-            x = x_next
-        
-        return x
+        self.result = x
+        return self.result, iterations
