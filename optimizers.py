@@ -1,25 +1,23 @@
 import math
-from functions import f, df, d2f
+from functions import f, d2f, df
 
-class BisectionMethod:
+class DichotomyMethod:
     def __init__(self, a, b, eps):
         self.a = a
         self.b = b
         self.eps = eps
-        self.history = []  # Для визуализации: храним границы интервалов
+        self.history = []
         
     def solve(self):
-        """Метод половинного деления"""
         a, b = self.a, self.b
-        iterations = 0
         delta = self.eps / 3
+        iterations = 0
         
         while (b - a) > self.eps:
             c = (a + b)/2
-            x1 = c - delta
-            x2 = c + delta
+            x1 = max(a, c - delta)
+            x2 = min(b, c + delta)
             
-            # Сохраняем данные для графика
             self.history.append({
                 'left': a,
                 'right': b,
@@ -40,10 +38,9 @@ class GoldenSectionMethod:
         self.a = a
         self.b = b
         self.eps = eps
-        self.history = []  # Храним все промежуточные интервалы
+        self.history = []
         
     def solve(self):
-        """Метод золотого сечения"""
         a, b = self.a, self.b
         ratio = (math.sqrt(5)-1)/2
         iterations = 0
@@ -75,16 +72,100 @@ class GoldenSectionMethod:
         self.result = (a + b)/2
         return self.result, iterations
 
+class ChordMethod:
+    def __init__(self, a, b, eps):
+        self.a = a
+        self.b = b
+        self.eps = eps
+        self.history = []
+        
+    def solve(self):
+        """Метод хорд для поиска корня производной"""
+        x_prev = self.a
+        x_curr = self.b
+        iterations = 0
+        
+        while True:
+            df_prev = df(x_prev)
+            df_curr = df(x_curr)
+            
+            self.history.append({
+                'points': [x_curr],
+                'derivatives': [df_curr]
+            })
+            
+            if abs(df_curr) < self.eps:
+                break
+                
+            try:
+                x_next = x_curr - df_curr*(x_curr - x_prev)/(df_curr - df_prev)
+            except ZeroDivisionError:
+                break
+                
+            x_next = max(self.a, min(x_next, self.b))
+            
+            if abs(x_next - x_curr) < self.eps:
+                break
+                
+            x_prev, x_curr = x_curr, x_next
+            iterations += 1
+            
+        self.result = x_curr
+        return self.result, iterations
+
+class QuadraticApproximation:
+    def __init__(self, a, b, eps):
+        self.a = a
+        self.b = b
+        self.eps = eps
+        self.history = []
+        
+    def solve(self):
+        """Метод квадратичной аппроксимации"""
+        a, c, b = self.a, (self.a+self.b)/2, self.b
+        iterations = 0
+        
+        while True:
+            fa, fc, fb = f(a), f(c), f(b)
+            
+            # Коэффициенты параболы
+            denominator = (b - a)*(b - c)*(c - a)
+            if denominator == 0:
+                break
+                
+            A = (fb*(c - a) + fc*(a - b) + fa*(b - c)) / denominator
+            B = (fb*(a**2 - c**2) + fc*(b**2 - a**2) + fa*(c**2 - b**2)) / denominator
+            C = (fb*(c - a)*a*c + fc*(a - b)*b*a + fa*(b - c)*c*b) / denominator
+            
+            # Вершина параболы
+            x_min = -B/(2*A) if A != 0 else c
+            x_min = max(self.a, min(x_min, self.b))
+            
+            self.history.append({
+                'points': [a, c, b, x_min],
+                'parabola': (A, B, C)
+            })
+            
+            if abs(x_min - c) < self.eps:
+                break
+                
+            # Обновление точек
+            new_points = sorted([a, b, c, x_min], key=lambda x: f(x))[:3]
+            a, c, b = sorted(new_points)
+            iterations += 1
+            
+        self.result = x_min
+        return self.result, iterations
+
 class NewtonMethod:
     def __init__(self, a, b, eps, x0=None):
         self.a = a
         self.b = b
         self.eps = eps
-        self.x0 = x0 or (a + b)/2  # Начальное приближение
-        self.history = []  # Точки итераций
+        self.x0 = x0 or (a + b)/2
+        self.history = []
         
     def solve(self):
-        """Метод Ньютона"""
         x = self.x0
         iterations = 0
         
@@ -93,11 +174,11 @@ class NewtonMethod:
             grad = df(x)
             hess = d2f(x)
             
-            if abs(grad) < self.eps:
+            if abs(grad) < self.eps or hess == 0:
                 break
                 
             x_new = x - grad/hess
-            x_new = max(self.a, min(x_new, self.b))  # Ограничение интервалом
+            x_new = max(self.a, min(x_new, self.b))
             
             if abs(x_new - x) < self.eps:
                 break
