@@ -15,7 +15,7 @@ a, b, eps = 0, 1, 0.003
 
 # Инициализация всех методов
 methods = {
-    "Dichotomy": BisectionMethod(a, b, eps),
+    "Bisection": BisectionMethod(a, b, eps),
     "Golden Section": GoldenSectionMethod(a, b, eps),
     "Chord": ChordMethod(a, b, eps),
     "Quadratic Approx": QuadraticApproximation(a, b, eps),

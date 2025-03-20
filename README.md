@@ -9,7 +9,7 @@ $$
 Первые пять пунктов каждого метода выполнить письменно
 
 ![alt text](plots/chord.png)
-![alt text](plots/dichotomy.png)
+![alt text](plots/bisection.png)
 ![alt text](plots/newton.png)
 ![alt text](plots/golden_section.png)
 ![alt text](plots/quadratic_approx.png)
