@@ -1,7 +1,7 @@
 import math
 from functions import f, d2f, df
 
-class DichotomyMethod:
+class BisectionMethod:
     def __init__(self, a, b, eps):
         self.a = a
         self.b = b
