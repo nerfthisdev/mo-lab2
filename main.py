@@ -1,10 +1,23 @@
 import math
 
+
+"""
+Рассматриваемая функция
+"""
+
 def f(x):
     return x**2 + math.exp(-x)
 
+"""
+Первая производная
+"""
 def df(x):
     return 2*x - math.exp(-x)
+
+
+"""
+Вторая производная
+"""
 
 def d2f(x):
     return 2 + math.exp(-x)
