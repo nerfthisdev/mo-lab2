@@ -10,13 +10,11 @@ class BisectionMethod:
         
     def solve(self):
         a, b = self.a, self.b
-        delta = self.eps / 3
         iterations = 0
         
-        while (b - a) > self.eps:
-            c = (a + b)/2
-            x1 = max(a, c - delta)
-            x2 = min(b, c + delta)
+        while (b - a) > self.eps * 2:
+            x1 = (a + b - self.eps) / 2
+            x2 = (a + b + self.eps) / 2
             
             self.history.append({
                 'left': a,

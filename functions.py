@@ -11,3 +11,6 @@ def df(x):
 def d2f(x):
     """Вторая производная: f''(x) = 2 + e^(-x)"""
     return 2 + math.exp(-x)
+
+
+

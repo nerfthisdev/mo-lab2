@@ -11,7 +11,7 @@ import numpy as np
 
 # Настройки
 os.makedirs("plots", exist_ok=True)
-a, b, eps = 0, 1, 0.003
+a, b, eps = 0, 1, 0.00001
 
 # Инициализация всех методов
 methods = {
@@ -28,6 +28,8 @@ for name, method in methods.items():
     result, iterations = method.solve()
     plot_method(method, f"{name} Method", name.lower().replace(" ", "_"))
     results[name] = (result, iterations)
+
+
 
 # Вывод результатов
 print("{:<15} | {:<10} | {:<10}".format("Method", "Result", "Iterations"))
